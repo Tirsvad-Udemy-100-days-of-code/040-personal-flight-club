@@ -1,0 +1,35 @@
+# Secrets and local data
+.env
+*.sqlite
+flight_cache.sqlite*
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Doxygen output
+docs/doxygen/
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Written by pywhatkit; holds message history and phone numbers
+PyWhatKit_DB.txt
+
+# AI agent tooling installed by the framework
+.agents/
+.claude/

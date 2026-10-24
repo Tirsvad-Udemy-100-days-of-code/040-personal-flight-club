@@ -1,0 +1,15 @@
+# Lint, format check and type check (ruff, mypy) through the shared TirSystem workflow.
+name: Quality
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  quality:
+    permissions:
+      contents: read
+    uses: TirSystem/github-action/.gitea/workflows/quality-checks.yml@v1
+    with:
+      languages: python,shell

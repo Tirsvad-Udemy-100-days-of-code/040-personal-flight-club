@@ -48,7 +48,13 @@ PROVIDER_SERPAPI = "serpapi"
 ## @brief Name of the mock flight provider.
 PROVIDER_MOCK = "mock"
 
-## @brief Environment variable: Sheety sheet endpoint.
+## @brief Environment variable: Sheety endpoint of the "prices" sheet.
+ENV_SHEETY_PRICES_ENDPOINT = "SHEETY_PRICES_ENDPOINT"
+
+## @brief Environment variable: Sheety endpoint of the "users" sheet (the club's customers).
+ENV_SHEETY_USERS_ENDPOINT = "SHEETY_USERS_ENDPOINT"
+
+## @brief Environment variable: the Day 39 name of the prices endpoint, still accepted.
 ENV_SHEETY_ENDPOINT = "SHEETY_ENDPOINT"
 
 ## @brief Environment variable: Sheety Bearer token.
@@ -77,6 +83,18 @@ WHATSAPP_WAIT_SECONDS = 15
 
 ## @brief Seconds pywhatkit waits after sending before it closes the browser tab.
 WHATSAPP_CLOSE_SECONDS = 3
+
+## @brief Key that holds the rows in the Sheety response for the "prices" sheet.
+PRICES_KEY = "prices"
+
+## @brief Key that holds the rows in the Sheety response for the "users" sheet.
+USERS_KEY = "users"
+
+## @brief Field of a "users" row that holds the customer's email address.
+EMAIL_FIELD = "email"
+
+## @brief Pattern of an accepted email address: text, an at sign and a dotted domain.
+EMAIL_PATTERN = r"[^@\s]+@[^@\s]+\.[^@\s]+"
 
 ## @brief Seconds to wait for an HTTP response before giving up.
 REQUEST_TIMEOUT_SECONDS = 30

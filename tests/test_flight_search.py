@@ -70,6 +70,7 @@ def test_check_flights_sends_serpapi_params() -> None:
         "type": "1",
         "adults": "1",
         "currency": CURRENCY,
+        "stops": "1",
         "api_key": API_KEY,
     }
     assert kwargs["timeout"] == REQUEST_TIMEOUT_SECONDS
@@ -217,3 +218,15 @@ def test_check_flights_never_prints_mock_secrets(
     captured = capsys.readouterr()
     assert APP_ID not in captured.out + captured.err
     assert APP_KEY not in captured.out + captured.err
+
+
+def test_check_flights_asks_for_up_to_two_stops_when_not_direct() -> None:
+    session = _session()
+    FlightSearch(session).check_flights("LHR", "DPS", FROM_TIME, TO_TIME, is_direct=False)
+    assert session.get.call_args.kwargs["params"]["stops"] == "3"
+
+
+def test_check_flights_is_direct_by_default() -> None:
+    session = _session()
+    _search(session)
+    assert session.get.call_args.kwargs["params"]["stops"] == "1"

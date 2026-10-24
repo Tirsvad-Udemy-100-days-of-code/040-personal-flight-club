@@ -9,7 +9,7 @@ from typing import Any
 from flight_club.constants import NOT_AVAILABLE
 
 
-## @brief The cheapest flight found for one destination.
+## @brief The cheapest flight found for one destination; `stops` is the number of stopovers.
 @dataclass
 class FlightData:
     price: float | int | str
@@ -17,6 +17,7 @@ class FlightData:
     destination_airport: str
     out_date: str
     return_date: str
+    stops: int = 0
 
 
 def _unavailable() -> FlightData:
@@ -48,6 +49,7 @@ def _build_flight(entry: dict[str, Any], price: float, return_date: str) -> Flig
             destination_airport=legs[-1]["arrival_airport"]["id"],
             out_date=legs[0]["departure_airport"]["time"].split(" ")[0],
             return_date=return_date,
+            stops=len(legs) - 1,
         )
     except (KeyError, IndexError, TypeError, AttributeError):
         return None

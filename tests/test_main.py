@@ -24,21 +24,31 @@ class FakeDataManager:
 
 
 class FakeFlightSearch:
-    def __init__(self, price: float | None) -> None:
+    def __init__(self, price: float | None, indirect_price: float | None = None) -> None:
         self.price = price
+        self.indirect_price = indirect_price
         self.calls: list[tuple[str, str, datetime, datetime]] = []
+        self.direct_flags: list[bool] = []
 
     def check_flights(
-        self, origin: str, destination: str, from_time: datetime, to_time: datetime
+        self,
+        origin: str,
+        destination: str,
+        from_time: datetime,
+        to_time: datetime,
+        is_direct: bool = True,
     ) -> dict[str, Any] | None:
         self.calls.append((origin, destination, from_time, to_time))
-        if self.price is None:
+        self.direct_flags.append(is_direct)
+        price = self.price if is_direct else self.indirect_price
+        if price is None:
             return None
         leg = {
             "departure_airport": {"id": origin, "time": "2026-10-25 08:00"},
             "arrival_airport": {"id": destination, "time": "2026-10-25 10:00"},
         }
-        return {"best_flights": [{"price": self.price, "flights": [leg]}]}
+        legs = [leg] if is_direct else [leg, leg]
+        return {"best_flights": [{"price": price, "flights": legs}]}
 
 
 class FakeNotificationManager:
@@ -54,11 +64,11 @@ class FakeNotificationManager:
 
 
 def _run(
-    rows: list[dict[str, Any]], price: float | None
+    rows: list[dict[str, Any]], price: float | None, indirect_price: float | None = None
 ) -> tuple[list[FlightData], FakeDataManager, FakeFlightSearch, FakeNotificationManager]:
     data, search, notifier = (
         FakeDataManager(rows),
-        FakeFlightSearch(price),
+        FakeFlightSearch(price, indirect_price),
         FakeNotificationManager(),
     )
     found = run(data, search, notifier, today=TODAY)  # type: ignore[arg-type]
@@ -108,7 +118,7 @@ def test_run_skips_row_without_iata_code() -> None:
 
 def test_run_checks_every_row_with_origin_and_dates() -> None:
     rows = [{**_row(), "iataCode": code, "id": i} for i, code in enumerate(["CDG", "BER", "TYO"])]
-    _, _, search, _ = _run(rows, None)
+    _, _, search, _ = _run(rows, 54)
     assert [c[:2] for c in search.calls] == [("LHR", "CDG"), ("LHR", "BER"), ("LHR", "TYO")]
     for call in search.calls:
         assert call[2] == TODAY + timedelta(days=1)
@@ -128,3 +138,30 @@ def test_main_exits_with_one_on_data_manager_error(
         main_module.main()
     assert exit_info.value.code == 1
     assert "SHEETY_ENDPOINT" in capsys.readouterr().out
+
+
+def test_run_prints_direct_search_message(capsys: pytest.CaptureFixture[str]) -> None:
+    _run([_row(100)], 54)
+    assert "Getting direct flights for Paris..." in capsys.readouterr().out
+
+
+def test_run_searches_only_direct_when_a_direct_flight_exists() -> None:
+    _, _, search, _ = _run([_row(100)], 54, 10)
+    assert search.direct_flags == [True]
+
+
+def test_run_falls_back_to_indirect_flights(capsys: pytest.CaptureFixture[str]) -> None:
+    found, data, search, notifier = _run([_row(100)], None, 70)
+    assert search.direct_flags == [True, False]
+    assert "No direct flight to Paris. Looking for indirect flights..." in capsys.readouterr().out
+    assert [f.price for f in found] == [70]
+    assert found[0].stops == 1
+    assert data.updates == [(2, 70)]
+    assert notifier.sent == ["alert CDG 70.0"]
+
+
+def test_run_reports_nothing_when_neither_search_finds_a_flight() -> None:
+    found, data, search, _ = _run([_row(100)], None, None)
+    assert search.direct_flags == [True, False]
+    assert found == []
+    assert data.updates == []

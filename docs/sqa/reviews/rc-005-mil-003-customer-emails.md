@@ -60,7 +60,7 @@ Go — all mandatory criteria pass; the one failed criterion is optional (QC-LAN
 
 ---
 
-[MIL-003]: ../../docs/milestones/mil-003-customer-emails.md
+[MIL-003]: ../../milestones/mil-003-customer-emails.md
 [QC-MIL-001]: ../../../framework/qc/artifacts/qc-milestones-gateways.md
 [QC-LANG-001]: ../../../framework/qc/artifacts/qc-language-domain.md
 [c5a6ed5]: https://git.tirsystem.com/Tirsvad-Udemy-100-days-of-code/040-personal-flight-club/commit/c5a6ed5985f76d8836f763acc5638053a39157f2

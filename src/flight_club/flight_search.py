@@ -24,6 +24,8 @@ from flight_club.constants import (
     REQUEST_TIMEOUT_SECONDS,
     SERPAPI_ENGINE,
     SERPAPI_URL,
+    STOPS_NONSTOP,
+    STOPS_UP_TO_TWO,
 )
 
 
@@ -93,6 +95,7 @@ class FlightSearch:
         destination_city_code: str,
         from_time: datetime,
         to_time: datetime,
+        is_direct: bool,
     ) -> dict[str, str]:
         params = {
             "engine": SERPAPI_ENGINE,
@@ -103,6 +106,7 @@ class FlightSearch:
             "type": "1",
             "adults": "1",
             "currency": CURRENCY,
+            "stops": STOPS_NONSTOP if is_direct else STOPS_UP_TO_TWO,
         }
         if self._api_key is not None:
             params["api_key"] = self._api_key
@@ -113,6 +117,7 @@ class FlightSearch:
     #  @param destination_city_code IATA code to arrive at.
     #  @param from_time Outbound date.
     #  @param to_time Return date.
+    #  @param is_direct True for nonstop flights only, False to allow up to two stops.
     #  @return The decoded response, or None after printing why the search failed.
     def check_flights(
         self,
@@ -120,8 +125,11 @@ class FlightSearch:
         destination_city_code: str,
         from_time: datetime,
         to_time: datetime,
+        is_direct: bool = True,
     ) -> dict[str, Any] | None:
-        params = self._build_params(origin_city_code, destination_city_code, from_time, to_time)
+        params = self._build_params(
+            origin_city_code, destination_city_code, from_time, to_time, is_direct
+        )
         try:
             response = self._get_session().get(
                 self._url,

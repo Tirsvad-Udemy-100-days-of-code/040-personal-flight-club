@@ -133,3 +133,21 @@ def test_find_cheapest_flight_trims_time_from_out_date() -> None:
     result = find_cheapest_flight({"best_flights": [_entry(50)]}, RETURN_DATE)
     assert result.out_date == "2026-07-01"
     assert result.return_date == RETURN_DATE
+
+
+def _multi_leg_entry(price: float, legs: int) -> dict[str, Any]:
+    segment = {
+        "departure_airport": {"id": "LHR", "time": "2026-07-01 08:00"},
+        "arrival_airport": {"id": "DPS", "time": "2026-07-02 10:00"},
+    }
+    return {"flights": [segment] * legs, "price": price}
+
+
+@pytest.mark.parametrize(("legs", "stops"), [(1, 0), (2, 1), (3, 2)])
+def test_stops_is_the_number_of_segments_minus_one(legs: int, stops: int) -> None:
+    cheapest = find_cheapest_flight({"best_flights": [_multi_leg_entry(500, legs)]}, RETURN_DATE)
+    assert cheapest.stops == stops
+
+
+def test_unavailable_flight_has_no_stops() -> None:
+    assert find_cheapest_flight(None, RETURN_DATE).stops == 0

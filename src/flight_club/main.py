@@ -55,10 +55,17 @@ def run(
         if not _is_checkable(row):
             print(f"Skipping row without an IATA code or a numeric lowest price: {row.get('city')}")
             continue
+        print(f"Getting direct flights for {row['city']}...")
         flights = flight_search.check_flights(
             ORIGIN_AIRPORT, row["iataCode"], tomorrow, six_month_from_today
         )
         cheapest = find_cheapest_flight(flights, return_date)
+        if cheapest.price == NOT_AVAILABLE:
+            print(f"No direct flight to {row['city']}. Looking for indirect flights...")
+            flights = flight_search.check_flights(
+                ORIGIN_AIRPORT, row["iataCode"], tomorrow, six_month_from_today, is_direct=False
+            )
+            cheapest = find_cheapest_flight(flights, return_date)
         print(f"{row['city']}: {CURRENCY} {cheapest.price}")
         if cheapest.price != NOT_AVAILABLE and cheapest.price < row["lowestPrice"]:
             print(f"Lower price flight found to {row['city']}!")

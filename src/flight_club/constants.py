@@ -36,6 +36,12 @@ NOT_AVAILABLE = "N/A"
 ## @brief strftime format of dates sent to and read from providers.
 DATE_FORMAT = "%Y-%m-%d"
 
+## @brief SerpApi `stops` value that asks for nonstop flights only.
+STOPS_NONSTOP = "1"
+
+## @brief SerpApi `stops` value that allows up to two stops.
+STOPS_UP_TO_TWO = "3"
+
 ## @brief Name of the SerpApi flight provider.
 PROVIDER_SERPAPI = "serpapi"
 

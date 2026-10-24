@@ -1,0 +1,9 @@
+# Fails a pull request that adds comments or docstrings which are not English.
+name: English comments
+
+on:
+  pull_request:
+
+jobs:
+  english-comments:
+    uses: TirSystem/github-action/.gitea/workflows/english-comments.yml@v2

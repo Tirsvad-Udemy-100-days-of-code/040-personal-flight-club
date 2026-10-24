@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "flight-club"
+version = "0.1.0"
+description = "Day 40 flight club: find cheap direct and indirect flights from a Google Sheet and notify the club by email and WhatsApp."
+readme = "README.md"
+requires-python = ">=3.13"
+license = { file = "LICENSE" }
+dependencies = [
+    "requests",
+    "requests-cache",
+    "python-dotenv",
+]
+
+[project.optional-dependencies]
+whatsapp = ["pywhatkit"]
+dev = ["pytest", "pytest-cov", "ruff", "mypy", "types-requests"]
+
+[project.scripts]
+flight-club = "flight_club.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.mypy]
+strict = true
+python_version = "3.13"
+
+# The shared CI quality job runs mypy without the project dependencies installed.
+[[tool.mypy.overrides]]
+module = ["requests", "requests_cache", "dotenv", "pywhatkit", "pytest"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_decorators = false

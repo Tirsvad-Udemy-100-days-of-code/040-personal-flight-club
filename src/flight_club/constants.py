@@ -78,6 +78,21 @@ ENV_MOCK_FLIGHTS_URL = "MOCK_FLIGHTS_URL"
 ## @brief Environment variable: WhatsApp recipient number with country code.
 ENV_WHATSAPP_NUMBER = "WHATSAPP_NUMBER"
 
+## @brief Environment variable: address of the SMTP server that sends the emails.
+ENV_SMTP_ADDRESS = "SMTP_ADDRESS"
+
+## @brief Environment variable: the sender's email address, also the SMTP login name.
+ENV_EMAIL_ADDRESS = "EMAIL_ADDRESS"
+
+## @brief Environment variable: the app password of the sender's email account.
+ENV_EMAIL_PASSWORD = "EMAIL_PASSWORD"
+
+## @brief Port of the SMTP server; the connection is upgraded with STARTTLS.
+SMTP_PORT = 587
+
+## @brief Subject line of the deal emails.
+EMAIL_SUBJECT = "New Low Price Flight!"
+
 ## @brief Seconds pywhatkit waits for WhatsApp Web to load before it sends the message.
 WHATSAPP_WAIT_SECONDS = 15
 

@@ -15,12 +15,24 @@ class FakeDataManager:
     def __init__(self, rows: list[dict[str, Any]]) -> None:
         self.rows = rows
         self.updates: list[tuple[int, float]] = []
+        self.customers_error: Exception | None = None
+        self.customer_reads = 0
 
     def get_destination_data(self) -> list[dict[str, Any]]:
         return self.rows
 
     def update_lowest_price(self, row_id: int, new_price: float) -> None:
         self.updates.append((row_id, new_price))
+
+    def get_customer_emails(self) -> list[dict[str, Any]]:
+        if self.customers_error is not None:
+            raise self.customers_error
+        self.customer_reads += 1
+        return [{"email": "ann@example.test"}, {"email": "bo@example.test"}]
+
+    @staticmethod
+    def extract_emails(customers: list[dict[str, Any]]) -> list[str]:
+        return [str(c["email"]) for c in customers]
 
 
 class FakeFlightSearch:
@@ -54,6 +66,11 @@ class FakeFlightSearch:
 class FakeNotificationManager:
     def __init__(self) -> None:
         self.sent: list[str] = []
+        self.emails: list[tuple[list[str], str]] = []
+
+    def send_emails(self, email_list: list[str], email_body: str) -> int:
+        self.emails.append((email_list, email_body))
+        return len(email_list)
 
     def build_message(self, flight: FlightData) -> str:
         return f"alert {flight.destination_airport} {flight.price}"
@@ -165,3 +182,39 @@ def test_run_reports_nothing_when_neither_search_finds_a_flight() -> None:
     assert search.direct_flags == [True, False]
     assert found == []
     assert data.updates == []
+
+
+def test_run_emails_every_customer_when_a_cheaper_flight_is_found() -> None:
+    _, _, _, notifier = _run([_row(100)], 54)
+    assert notifier.emails == [(["ann@example.test", "bo@example.test"], "alert CDG 54.0")]
+
+
+def test_run_sends_no_email_when_nothing_is_cheaper() -> None:
+    _, _, _, notifier = _run([_row(100)], 150)
+    assert notifier.emails == []
+
+
+def test_run_reads_the_customers_once_for_several_deals() -> None:
+    rows = [{**_row(), "iataCode": code, "id": i} for i, code in enumerate(["CDG", "BER"])]
+    data, search, notifier = FakeDataManager(rows), FakeFlightSearch(54), FakeNotificationManager()
+    run(data, search, notifier, today=TODAY)  # type: ignore[arg-type]
+    assert data.customer_reads == 1
+    assert len(notifier.emails) == 2
+
+
+def test_run_still_sends_whatsapp_when_the_customers_cannot_be_read(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    data, search, notifier = (
+        FakeDataManager([_row(100)]),
+        FakeFlightSearch(54),
+        FakeNotificationManager(),
+    )
+    data.customers_error = DataManagerError(
+        "Environment variable SHEETY_USERS_ENDPOINT is not set."
+    )
+    found = run(data, search, notifier, today=TODAY)  # type: ignore[arg-type]
+    assert [f.price for f in found] == [54]
+    assert notifier.sent == ["alert CDG 54.0"]
+    assert notifier.emails == [([], "alert CDG 54.0")]
+    assert "SHEETY_USERS_ENDPOINT" in capsys.readouterr().out

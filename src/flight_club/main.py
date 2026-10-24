@@ -32,6 +32,14 @@ def _is_checkable(row: dict[str, object]) -> bool:
     )
 
 
+def _get_customer_emails(data_manager: DataManager) -> list[str]:
+    try:
+        return data_manager.extract_emails(data_manager.get_customer_emails())
+    except DataManagerError as error:
+        print(f"No emails sent: {error}")
+        return []
+
+
 ## @brief Checks every sheet row and reports each flight cheaper than the stored price.
 #  @param data_manager Source of the destination rows and target of price updates.
 #  @param flight_search Provider of flight offers.
@@ -49,6 +57,7 @@ def run(
     six_month_from_today = today + timedelta(days=SEARCH_WINDOW_DAYS)
     return_date = six_month_from_today.strftime(DATE_FORMAT)
     found: list[FlightData] = []
+    customer_emails: list[str] | None = None
 
     sheet_data = data_manager.get_destination_data()
     for row in sheet_data:
@@ -70,7 +79,11 @@ def run(
         if cheapest.price != NOT_AVAILABLE and cheapest.price < row["lowestPrice"]:
             print(f"Lower price flight found to {row['city']}!")
             data_manager.update_lowest_price(row["id"], cheapest.price)  # type: ignore[arg-type]
-            notification_manager.send_whatsapp(notification_manager.build_message(cheapest))
+            message = notification_manager.build_message(cheapest)
+            notification_manager.send_whatsapp(message)
+            if customer_emails is None:
+                customer_emails = _get_customer_emails(data_manager)
+            notification_manager.send_emails(customer_emails, message)
             found.append(cheapest)
     return found
 

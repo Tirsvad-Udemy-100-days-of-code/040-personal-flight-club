@@ -9,7 +9,7 @@
 ## Version History
 | Date | Status | Author | Reviewer | Change | Commit |
 | --- | --- | --- | --- | --- | --- |
-| 2026-10-24 | Accepted | Jens Tirsvad Nielsen | AI as stand-in for S01 | Initial version | pending |
+| 2026-10-24 | Accepted | Jens Tirsvad Nielsen | AI as stand-in for S01 | Initial version | [3eb3531] |
 
 ---
 
@@ -58,3 +58,4 @@ Go — all mandatory criteria pass; deviations are recorded in ADR-0001.
 [MIL-001]: ../../milestones/mil-001-baseline-and-setup.md
 [QC-PY-001]: ../../../framework/qc/code/qc-programming-python.md
 [ADR-0001]: ../../adr/adr-0001-flat-module-layout-and-console-output.md
+[3eb3531]: https://git.tirsystem.com/Tirsvad-Udemy-100-days-of-code/040-personal-flight-club/commit/3eb353140bdce71580a9d8a60acb42fdc8ca9d54
